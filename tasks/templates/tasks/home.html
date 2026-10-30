@@ -1,0 +1,109 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}">
+</head>
+<body>
+    <div class="container">
+
+        <header class="header">
+            <div>
+                <h1>TaskFlow</h1>
+                <p>Organize your work. Get things done.</p>
+            </div>
+        </header>
+
+        <section class="stats">
+            <div class="stat-card">
+                <p>Total Tasks</p>
+                <h2>{{ total_tasks }}</h2>
+            </div>
+
+            <div class="stat-card">
+                <p>Pending</p>
+                <h2>{{ pending_tasks }}</h2>
+            </div>
+
+            <div class="stat-card">
+                <p>Completed</p>
+                <h2>{{ completed_tasks }}</h2>
+            </div>
+        </section>
+
+        <form class="task-form" method="POST">
+            {% csrf_token %}
+            <input
+                type="text"
+                name="title"
+                placeholder="What needs to be done?"
+                required
+            >
+            <button type="submit">+ Add Task</button>
+        </form>
+
+        <section class="task-list">
+            <h2>My Tasks</h2>
+
+            {% for task in tasks %}
+                <div class="task">
+
+                    <div class="task-info">
+                        {% if task.completed %}
+                            <span class="task-title completed-title">
+                                {{ task.title }}
+                            </span>
+                            <span class="status completed-status">
+                                Completed
+                            </span>
+                        {% else %}
+                            <span class="task-title">
+                                {{ task.title }}
+                            </span>
+                            <span class="status pending-status">
+                                Pending
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="task-actions">
+                        {% if not task.completed %}
+                            <form method="POST"
+                                  action="{% url 'complete_task' task.id %}">
+                                {% csrf_token %}
+                                <button class="complete-btn" type="submit">
+                                    Complete
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="POST"
+                              action="{% url 'delete_task' task.id %}"
+      onsubmit="return confirmDelete();">
+                            {% csrf_token %}
+                            <button class="delete-btn" type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            {% empty %}
+                <p class="empty-message">
+                    No tasks yet. Add your first task!
+                </p>
+            {% endfor %}
+        </section>
+
+    </div>
+    <script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this task?");
+    }
+</script>
+</body>
+</html>
